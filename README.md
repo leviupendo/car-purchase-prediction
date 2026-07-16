@@ -1,38 +1,43 @@
-# Car Purchase Price Prediction
+# Used Car Price Predictor
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![Scikit-Learn](https://img.shields.io/badge/ML-Scikit--Learn-orange)
 ![Streamlit](https://img.shields.io/badge/App-Streamlit-red)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+![R2](https://img.shields.io/badge/R²-0.86-brightgreen)
 
-End-to-end machine learning system that predicts how much a customer is likely to spend on a car, based on their demographic and financial profile (gender, age, annual salary, credit card debt, net worth). Deployed as an interactive **Streamlit** web app.
+End-to-end machine learning system that predicts the **market price of a used car** based on real listings scraped from [cars.com](https://www.cars.com). Deployed as an interactive **Streamlit** web app.
+
+## Dataset
+
+**Source:** [Used Car Price Prediction Dataset — Kaggle](https://www.kaggle.com/datasets/taeefnajib/used-car-price-prediction-dataset)
+
+- 4,009 real vehicle listings from cars.com
+- Features: brand, model year, mileage, horsepower, fuel type, transmission, accident history, clean title
 
 ## Project Structure
-
-```
 car-purchase-prediction/
-├── car_purchasing.csv        # Dataset (500 customers)
-├── generate_data.py          # Script that generated the dataset
-├── data_preprocessing.py     # Cleaning, train/test split, scaling
+├── used_cars.csv             # Real dataset from cars.com (via Kaggle)
+├── data_preprocessing.py     # Cleaning, feature engineering, scaling
 ├── train_model.py            # Model training + GridSearchCV tuning
 ├── app.py                    # Streamlit deployment app
-├── best_model.pkl            # Saved best regression model
-├── scaler.pkl                # Saved StandardScaler
+├── best_model.pkl            # Trained Gradient Boosting model
+├── scaler.pkl                # Fitted StandardScaler
+├── feature_cols.pkl          # Feature column names for inference
+├── log_target.pkl            # Flag: target was log-transformed
 ├── requirements.txt
 └── README.md
-```
 
-## Features Used
+## Model Performance
 
-| Column              | Description                        |
-|---------------------|------------------------------------|
-| gender              | 0 = Female, 1 = Male               |
-| age                 | Customer age (years)               |
-| annual_salary       | Annual salary (USD)                |
-| credit_card_debt    | Outstanding credit card debt (USD) |
-| net_worth           | Customer net worth (USD)           |
-| car_purchase_amount | **Target** — purchase amount (USD) |
+| Model               | R² (log scale) | MAE      | RMSE     |
+|---------------------|----------------|----------|----------|
+| Linear Regression   | 0.81           | $11,313  | $24,356  |
+| Random Forest       | 0.83           | $10,188  | $20,797  |
+| **Gradient Boosting** | **0.86**     | **$8,854** | **$16,729** |
+
+> Price was log-transformed before training to handle the natural right skew of car prices.
 
 ## Getting Started
 
@@ -49,26 +54,23 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Generate dataset
-```bash
-python generate_data.py
-```
-
-### 4. Train the model
+### 3. Train the model
 ```bash
 python train_model.py
 ```
 
-### 5. Run the app
+### 4. Run the app
 ```bash
 streamlit run app.py
 ```
 
-Open `http://localhost:8501` in your browser.
+Open `http://localhost:8501` — use the sidebar to enter car details and get a price estimate.
 
-## Model Performance
+## How It Works
 
-Three models are compared (Linear Regression, Random Forest, Gradient Boosting). The best by R² is auto-selected and saved. Baseline Linear Regression achieved **R² = 0.72**.
+1. **Preprocessing** — cleans price/mileage strings, extracts horsepower from engine description, encodes accident history and clean title as binary flags, one-hot encodes brand, fuel type, and transmission
+2. **Training** — compares Linear Regression, Random Forest, and Gradient Boosting with GridSearchCV (3-fold CV), selects best model by R²
+3. **Deployment** — Streamlit app loads saved model and scaler, takes car details as input, returns predicted market price
 
 ## License
 
